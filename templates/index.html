@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Scraper</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-text {
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card:hover {
+            transform: scale(1.03);
+            transition: 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <h1 class="mb-4 text-center">📚 Product List</h1>
+
+    <!-- Buttons: Analytics, Refresh -->
+    <div class="mb-3 d-flex gap-2 justify-content-center">
+        <a href="/analytics" class="btn btn-info">📊 View Analytics</a>
+        <a href="/refresh" class="btn btn-warning">🔄 Refresh Data</a>
+    </div>
+
+    <!-- Search + Filter + Sort Form -->
+    <form method="get" action="/" class="row mb-4 g-2">
+        <div class="col-md-3">
+            <input type="text" class="form-control" name="q" placeholder="🔍 Search products..." value="{{ query }}">
+        </div>
+        <div class="col-md-2">
+            <input type="number" class="form-control" name="min_price" placeholder="Min Price" value="{{ min_price }}">
+        </div>
+        <div class="col-md-2">
+            <input type="number" class="form-control" name="max_price" placeholder="Max Price" value="{{ max_price }}">
+        </div>
+        <div class="col-md-2">
+            <select name="rating" class="form-select">
+                <option value="">All Ratings</option>
+                {% for r in ['One','Two','Three','Four','Five'] %}
+                    <option value="{{ r }}" {% if rating == r %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="sort" class="form-select">
+                <option value="asc" {% if sort == 'asc' %}selected{% endif %}>Price: Low → High</option>
+                <option value="desc" {% if sort == 'desc' %}selected{% endif %}>Price: High → Low</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-primary w-100" type="submit">Apply</button>
+        </div>
+    </form>
+
+    <!-- Product Cards -->
+    <div class="row">
+        {% for item in data %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.Title }}</h5>
+                    <h6 class="text-primary mb-2">£{{ item.Price }}</h6>
+                    <p class="text-muted mb-1">Rating: {{ item.Rating }}</p>
+                    <p class="card-text">{{ item.Description }}</p>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#descModal{{ loop.index }}">Read More</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for full description -->
+        <div class="modal fade" id="descModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ item.Title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>{{ item.Description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&min_price={{ min_price }}&max_price={{ max_price }}&rating={{ rating }}&sort={{ sort }}&page={{ page - 1 }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if page == p %}active{% endif %}">
+                <a class="page-link" href="?q={{ query }}&min_price={{ min_price }}&max_price={{ max_price }}&rating={{ rating }}&sort={{ sort }}&page={{ p }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&min_price={{ min_price }}&max_price={{ max_price }}&rating={{ rating }}&sort={{ sort }}&page={{ page + 1 }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
